@@ -1,16 +1,23 @@
 FROM alpine:3.20
 
-LABEL maintainer="@ahlfors"
+LABEL maintainer="DevOps Team"
 LABEL description="AWS Route53 Auto-Update with Feishu Notification"
 
-# 安装运行依赖（含 AWS CLI）
+# 安装运行依赖 + Python（用于 pip 安装 AWS CLI）
 RUN apk add --no-cache \
     bash \
     curl \
     jq \
     tzdata \
-    aws-cli \
+    python3 \
+    py3-pip \
     && rm -rf /var/cache/apk/*
+
+# 通过 pip 安装 AWS CLI（纯 Python，支持所有架构）
+RUN pip3 install --no-cache-dir --break-system-packages awscli
+
+# 验证安装
+RUN aws --version
 
 # 设置默认时区
 ENV TZ=Asia/Shanghai
