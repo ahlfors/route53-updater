@@ -1,0 +1,33 @@
+version: "3.8"
+
+services:
+  route53-updater:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: route53-updater
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - TZ=Asia/Shanghai
+    volumes:
+      # 持久化日志
+      - route53-logs:/app/logs
+      # 挂载宿主机 /tmp 以读取 IP 文件（按需调整路径）
+      - /tmp:/host-tmp:ro
+    healthcheck:
+      test: ["CMD", "pgrep", "crond"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  route53-logs:
+    driver: local
