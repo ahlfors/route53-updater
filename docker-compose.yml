@@ -9,13 +9,15 @@ services:
     restart: unless-stopped
     env_file:
       - .env
+    ports:
+      # Webhook 接收端口（建议前置 Nginx/Caddy 做 TLS 终止）
+      - "${WEBHOOK_PORT:-9090}:9090"
     environment:
       - TZ=Asia/Shanghai
     volumes:
       # 持久化日志
       - route53-logs:/app/logs
-      # 挂载宿主机 /tmp 以读取 IP 文件（按需调整路径）
-      - /tmp:/host-tmp:ro
+      - route53-data:/app/data
     healthcheck:
       test: ["CMD", "pgrep", "crond"]
       interval: 30s
@@ -30,4 +32,6 @@ services:
 
 volumes:
   route53-logs:
+    driver: local
+  route53-data:
     driver: local
